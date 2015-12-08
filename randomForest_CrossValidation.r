@@ -1,19 +1,16 @@
-#screen -r
-#detach ctr a ctr d
-#ssh dunia@128.84.15.28
-#write.table(drgphenos5,file="~/Desktop/IITAannot.txt")
-#load("V6_NEXTGEN_Dosages_50115.Rdata")
-#drgphenos5<-read.table("GGphenos.txt", header=T, stringsAsFactor=F)
+
 rm(list = ls())
 setwd("~/Google Drive/MultikernelV6/")
 #######
 load("IITAV6.Rdata")
 snps <- snps[!duplicated(rownames(snps)),]
-######
+######reading files and matching to snp dosage files
 drgphenos8=read.table("iitanewnamesDosage.txt", header=T, stringsAsFactor=F)
 drgphenos2=read.table("namesdrgphenos.txt", header=T, stringsAsFactor=F)
 drgphenos5<-merge(drgphenos8,drgphenos2,by="CLONE",ALL=FALSE)
 drgphenos5<-drgphenos5[which(drgphenos5$CLONE%in%row.names(snps)),]
+
+
 ################# STARCH #########################################################
 starch<-read.table(file="annotation/starch.snps",header=TRUE,stringsAsFactor=F)
 starch<-starch[!duplicated(starch[,1]),]
