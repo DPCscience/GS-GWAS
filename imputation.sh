@@ -1,12 +1,4 @@
-###connect to computer MW
-ssh dpd64@128.84.15.23
-cd /Volumes/ManihotDB/June2016_VCF
-###send the vcf file to cbsu
-scp -r /Volumes/ManihotDB/June2016_VCF/RawVCF rjl278@128.84.3.220:/home/rjl278
-###send names clones Lydia to cbsu
-scp -r ~/Google\ Drive/GWAS_lydia/clonesGBS.txt rjl278@128.84.3.220:/home/rjl278
-###cbsu
-ssh -X rjl278@cbsumm07.tc.cornell.edu
+
 cd /workdir
 cp -r /home/rjl278/RawVCF RawVCF
 cp -r /home/rjl278/clonesGBS.txt clonesGBS.txt
@@ -19,7 +11,6 @@ for i in {7..9}; do vcftools --gzvcf RawVCF/cassavaGBSbuild_June2016_withRef_chr
 #transfer file to rjl computer
 ######################################################################################
 
-scp -r ~/Google\ Drive/GWAS_lydia/clonesGBS.txt dunia@128.253.192.28:/home/roberto/Desktop/Lydia
 cp -r /home/DB2/GBS_June_2016 GBS_June_2016
 cp -r home/DB2/dunia/clonesGBS.txt clonesGBS.txt
 cp -r /home/roberto/Software/beagle.05Jul16.587.jar beagle.05Jul16.587.jar
@@ -53,11 +44,9 @@ awk '{if ($1 == "#CHROM"){print NF-9; exit}}' Lydia.vcf.gz_filter3.vcf
 cat Imputed.Lydia.vcf.gz_filter3.vcf | vcf-annotate --fill-type | grep -oP "TYPE=\w+" | sort | uniq -c #214759 TYPE=snp
 gzip Imputed.Lydia.vcf.gz_filter3.vcf
 
-scp -r rjl278@cbsulm04.tc.cornell.edu:/workdir/Imputed.Lydia.vcf.gz_filter3.vcf.gz.vcf.gz ~/Google\ Drive/GWAS_lydia/Imputed.Lydia.vcf.gz_filter3.vcf.gz.vcf.gz
 
 ####FILTER BY AR needs to be bgzipped first
 ###import Imputed.Lydia.vcf.gz_filter3.vcf.gz
-scp -r dunia@128.253.192.28:/home/roberto/Desktop/Lydia/Imputed.Lydia.vcf.gz_filter3.vcf.gz   ~/Google\ Drive/GWAS_lydia
 gunzip Imputed.Lydia.vcf.gz_filter3.vcf.gz
 /Users/dpd64/htslib/bgzip Imputed.Lydia.vcf.gz_filter3.vcf
 /Users/dpd64/htslib/tabix -p vcf Imputed.Lydia.vcf.gz_filter3.vcf.gz && /Users/dpd64/bcftools/bcftools view --include 'INFO/AR2>=0.3' Imputed.Lydia.vcf.gz_filter3.vcf.gz | gzip -c > Imputed.Lydia._AR2filtered.vcf.gz 
@@ -74,7 +63,6 @@ gunzip Imputed.Lydia._AR2filtered_maf.vcf.gz
 vcftools --vcf Imputed.Lydia._AR2filtered_maf.vcf --extract-FORMAT-info DS --out Dosage.Imputed.AR.maf.Lydia.vcf
 
 #Import
-scp -r dunia@128.253.192.28:/home/roberto/Desktop/Lydia/Imputed.Lydia.vcf.gz_filter3.vcf.gz   ~/Google\ Drive/GWAS_lydia
 
 # Load in R
 dose<-read.table("Dosage.Imputed.AR.maf.Lydia.vcf", header=T, stringsAsFactors = F)
