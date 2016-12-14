@@ -14,7 +14,7 @@ d2 <- A %>%
 head(d2)
 ```
 
-Stacked plots with percentage per chromsome
+Stacked plots with percentage per chromosome
 ```{r}
 library(ggplot2)
 ggplot(d2, aes(CHR, y=perc*100, fill=as.factor(P))) +
