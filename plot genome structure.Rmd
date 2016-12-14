@@ -1,0 +1,27 @@
+---
+title: "Stacked plot of genome structure categories"
+output: html_notebook
+---
+Annotation of genome structural composition per chromosome
+Each SNP marker has a column which contains a value from 1-7 which corresponds to the category exon,intron,UTR,etc
+```{r}
+A<-read.table(file="~/Google Drive/plotgenome.txt",header=TRUE)
+library(dplyr)
+d2 <- A %>% 
+  group_by(CHR,P) %>% 
+  summarise(count=n()) %>% 
+  mutate(perc=count/sum(count))
+head(d2)
+```
+
+Stacked plots with percentage per chromsome
+```{r}
+library(ggplot2)
+ggplot(d2, aes(CHR, y=perc*100, fill=as.factor(P))) +
+geom_bar(stat="identity") +theme_bw()+theme(axis.title.x=element_blank(),
+axis.text.x  = element_text(angle=0, vjust=0.9, size=20),axis.title.y =element_blank() ,axis.text.y  = element_text(angle=0, vjust=0.5, size=20))+
+scale_fill_manual(values=c("#d1ceaa","#2b8e86",'#E69F00',"#b72f2e","#d4eef4","#91ca64","#f8d41e"),labels = c("downstream", "exon","intergenic","intron","upstream","5’UTR","3’UTR"))+
+theme(legend.title=element_blank())
+  
+```
+
