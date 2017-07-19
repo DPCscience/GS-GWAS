@@ -11,7 +11,7 @@ myrep<-function(traits,pheno){
   {
     require(lme4)
     model<-lmer(data=pheno,formula = get(traits[i]) ~  (1|Clones) ) #changes depending on the fixed and random effects
-    deregress<-function(model, trait){
+    deregress<-function(model, trait){##deregress code Uche Okeke
       BLUP <- ranef(model, condVar=TRUE)$Clones###CLONE column name
       PEV <- c(attr(BLUP, "postVar"))
       clone.var <- c(VarCorr(model)$Clones)###CLONE column name
