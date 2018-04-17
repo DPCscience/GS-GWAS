@@ -1,0 +1,10 @@
+##############functions
+calc_snpeff<-function(gebvs,K,M,...){
+  K1<-K[gebvs$CLONE,gebvs$CLONE]
+  M1<-M[rownames(M)%in%rownames(K1),] 
+  Kinv<-solve(K)
+  snpeff<-t(M1) %*% Kinv %*% gebvs$GEBV
+  snpeff_ed<-as.data.frame(snpeff)
+  snpeff_ed %<>% rownames_to_column(var = "SNP")
+  snpeff_ed %<>% dplyr::rename(SNPeff=V1)
+  return(snpeff_ed)}
