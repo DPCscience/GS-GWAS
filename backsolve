@@ -1,4 +1,10 @@
-##############functions
+##############function
+#K is the GRM matrix
+#gebv are the obtained GEBV from prediction
+#M is the marker matrix
+#CLONE is the column name of the gebv object dataframe
+#backsolve marker effects from GBLUP model
+
 calc_snpeff<-function(gebvs,K,M,...){
   K1<-K[gebvs$CLONE,gebvs$CLONE]
   M1<-M[rownames(M)%in%rownames(K1),] 
