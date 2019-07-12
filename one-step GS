@@ -1,0 +1,84 @@
+##################################################################################
+#function one step model GS using EMMREML, takes a trait name and year for crossvalidation across years NOT random crossvalidation
+#the phenotype file is the barley_barcode object in this example
+#Entry No is the colname for ID 
+#A is the GRM with ID column and rownames same as the phenotype data
+#Year is the column name that contains info on year
+#Trait is given as i.e Trait<-"height"
+##################################################################################
+
+emm_cross<-function(Trait,year,barley barcode,A){
+  require("dplyr")
+  require("lme4")
+  require("EMMREML")
+  require("sommer")
+  
+  cross_lma<-list()#the list will contain results for 10 replicates each with 5 folds
+  
+  
+  for(j in 1:10){
+    #year<-"2013"
+    barley_barcode_year<-barley_barcode%>%filter(Year==year)
+    #creating folds
+    set<-unique(barley_barcode_year$`Entry No`)
+        folds <- function(dataset,nFolds){
+      index <- unique(barley_barcode_year$`Entry No`)
+      index <- sample(index) 
+      fold <- rep(1:nFolds, each=length(dataset)/5)[1:length(dataset)]
+      folds <- split(index, fold)
+      return(folds) 
+    }
+    list_samp<-folds(set,5)
+    
+    respred<-data.frame()
+    #running prediction for each fold
+    for (i in 1:length(list_samp)){
+      valset<-list_samp[[i]]
+      year1=as.character(year)
+      genos_year<-barley_barcode%>%filter(!Year==year1)
+      genos_year<- genos_year%>%filter(!`Entry No`%in%valset)
+      GRMnames<-c(unique(genos_year$`Entry No`),as.character(valset))
+      A1<-A[GRMnames,GRMnames]
+      A1<-as.matrix(A1)
+      ##################################
+      pred<-genos_year
+      pred$`Entry No`<- factor(as.character(pred$`Entry No`),levels=rownames(A1))
+      pred$Year<-as.factor(pred$Year)
+      Zg = model.matrix(~ pred$`Entry No`-1)#model matrix random can be modified
+      X = model.matrix(~1+Trial,data=pred) #model matrix fixed effects can be modified
+      y = pred%>%pull(Trait) 
+      funout <- emmremlMultiKernel(y=y, X=X, Z=list(Zg), K=list(A1), varuhat=T,PEVuhat=T) 
+      res<-data.frame(funout$uhat)
+      res$name<-rownames(res)
+      res$name<-gsub("K_1","",res$name)
+      res<-res[res$name%in%valset,]
+     
+     #adjusted phenotypes to correlate with GEBVs
+     #just renaming the column name 
+      barley_barcode_year1<-plyr::rename(barley_barcode_year,c(`Entry No`="BARCODE"))
+      barley_barcode_year1<- barley_barcode_year1%>%drop_na(Trial)
+      out<-mmer2(as.formula(paste0(Trait,"~Trial")),
+                 random= ~ BARCODE,
+                 rcov=~units,
+                 data=barley_barcode_year1,silent=TRUE)
+      #processing out object
+      test<-data.frame(out$u.hat[[1]])
+      test$entry<-rownames(test)
+      test$entry<-gsub("BARCODE","",test$entry)
+      colnames(test)<-c("lsmean","name")
+      adjval<-test
+      
+      #subset results to get just the validation set BLUPs 
+      adjval<-adjval[adjval$name%in%valset,]
+      #combine BLUPs and GEBVs
+      joinadj<-left_join(adjval,res,by="name")
+      respred1<-cor(joinadj$funout.uhat,joinadj$lsmean)#this is the accuracy
+      respred1<-data.frame(accuracy= respred1,data=nrow(genos_year))
+      respred<-rbind(respred,respred1)
+    }
+    
+    cross_lma[[j]]<-respred
+  }
+  return(cross_lma) 
+}
+
