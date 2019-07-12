@@ -76,7 +76,6 @@ emm_cross<-function(Trait,year,barley barcode,A){
       respred1<-data.frame(accuracy= respred1,data=nrow(genos_year))
       respred<-rbind(respred,respred1)
     }
-    
     cross_lma[[j]]<-respred
   }
   return(cross_lma) 
